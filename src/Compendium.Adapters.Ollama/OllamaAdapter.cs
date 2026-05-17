@@ -1,18 +1,18 @@
 // -----------------------------------------------------------------------
-// <copyright file="SampleAdapter.cs" company="Sassy Solutions">
+// <copyright file="OllamaAdapter.cs" company="Sassy Solutions">
 //     Copyright (c) 2026 Sassy Solutions. Licensed under the MIT License.
 //     See LICENSE in the project root for license information.
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Compendium.Adapters.Sample.Options;
+using Compendium.Adapters.Ollama.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Compendium.Adapters.Sample;
+namespace Compendium.Adapters.Ollama;
 
 /// <summary>
-/// Sample adapter — replace with the real vendor implementation.
+/// Ollama adapter — replace with the real vendor implementation.
 /// Demonstrates the canonical shape:
 /// <list type="bullet">
 ///   <item>typed options bound from configuration</item>
@@ -20,17 +20,17 @@ namespace Compendium.Adapters.Sample;
 ///   <item>methods return <c>Result&lt;T&gt;</c> from Compendium.Abstractions</item>
 /// </list>
 /// </summary>
-public sealed class SampleAdapter
+public sealed class OllamaAdapter
 {
-    private readonly SampleOptions _options;
-    private readonly ILogger<SampleAdapter> _logger;
+    private readonly OllamaOptions _options;
+    private readonly ILogger<OllamaAdapter> _logger;
 
     /// <summary>
-    /// Creates a new <see cref="SampleAdapter"/>.
+    /// Creates a new <see cref="OllamaAdapter"/>.
     /// </summary>
     /// <param name="options">Adapter configuration.</param>
     /// <param name="logger">Diagnostic logger.</param>
-    public SampleAdapter(IOptions<SampleOptions> options, ILogger<SampleAdapter> logger)
+    public OllamaAdapter(IOptions<OllamaOptions> options, ILogger<OllamaAdapter> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
