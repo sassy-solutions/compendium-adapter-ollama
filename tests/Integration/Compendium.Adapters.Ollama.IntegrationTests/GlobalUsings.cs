@@ -7,21 +7,9 @@
 
 global using Xunit;
 global using FluentAssertions;
-global using NSubstitute;
 global using Compendium.Abstractions.AI;
 global using Compendium.Abstractions.AI.Models;
-global using Compendium.Abstractions.AI.Agents.Models;
 global using Compendium.Adapters.Ollama.Configuration;
-global using Compendium.Adapters.Ollama.Services;
-global using Compendium.Core.Results;
+global using Compendium.Adapters.Ollama.DependencyInjection;
+global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
-global using Microsoft.Extensions.Options;
-global using RichardSzalay.MockHttp;
-global using System.Net;
-global using System.Net.Http;
-global using System.Text;
-global using System.Text.Json;
-global using System.Threading;
-global using System.Threading.Tasks;
-global using System.Collections.Generic;
-global using System.Linq;

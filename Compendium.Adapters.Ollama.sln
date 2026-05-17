@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -9,6 +9,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compendium.Adapters.Ollama", "src\Compendium.Adapters.Ollama\Compendium.Adapters.Ollama.csproj", "{A1A1A1A1-0000-0000-0000-000000000001}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compendium.Adapters.Ollama.Tests", "tests\Unit\Compendium.Adapters.Ollama.Tests\Compendium.Adapters.Ollama.Tests.csproj", "{A1A1A1A1-0000-0000-0000-000000000002}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integration", "Integration", "{98E22AE6-6CAA-416E-802E-80DCC53C442C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compendium.Adapters.Ollama.IntegrationTests", "tests\Integration\Compendium.Adapters.Ollama.IntegrationTests\Compendium.Adapters.Ollama.IntegrationTests.csproj", "{CA38964B-0A99-46A1-934C-A3AD0B1C4BE7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7E99A47A-BAEB-4AB0-8DDC-EA5F8BA25622}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compendium.Adapters.Ollama.Sample.LocalChat", "samples\01-local-chat\Compendium.Adapters.Ollama.Sample.LocalChat.csproj", "{95515CEE-79D6-4234-9DDF-925BB1B56A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,9 +32,20 @@ Global
 		{A1A1A1A1-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1A1A1A1-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1A1A1A1-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA38964B-0A99-46A1-934C-A3AD0B1C4BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA38964B-0A99-46A1-934C-A3AD0B1C4BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA38964B-0A99-46A1-934C-A3AD0B1C4BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA38964B-0A99-46A1-934C-A3AD0B1C4BE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95515CEE-79D6-4234-9DDF-925BB1B56A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95515CEE-79D6-4234-9DDF-925BB1B56A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95515CEE-79D6-4234-9DDF-925BB1B56A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95515CEE-79D6-4234-9DDF-925BB1B56A52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A1A1A1A1-0000-0000-0000-000000000001} = {D6C5C0A8-4A5A-4A5A-9C4A-1F4A4F4F4F01}
 		{A1A1A1A1-0000-0000-0000-000000000002} = {D6C5C0A8-4A5A-4A5A-9C4A-1F4A4F4F4F02}
+		{98E22AE6-6CAA-416E-802E-80DCC53C442C} = {D6C5C0A8-4A5A-4A5A-9C4A-1F4A4F4F4F02}
+		{CA38964B-0A99-46A1-934C-A3AD0B1C4BE7} = {98E22AE6-6CAA-416E-802E-80DCC53C442C}
+		{95515CEE-79D6-4234-9DDF-925BB1B56A52} = {7E99A47A-BAEB-4AB0-8DDC-EA5F8BA25622}
 	EndGlobalSection
 EndGlobal
