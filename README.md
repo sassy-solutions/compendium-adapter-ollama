@@ -1,118 +1,160 @@
-# `template-compendium-adapter-dotnet`
+# `compendium-adapter-ollama`
 
-Starter for a new **Compendium** adapter (.NET 9, single-vendor, lives in its own repository).
+[Ollama](https://ollama.com/) AI provider adapter for the [Compendium](https://github.com/sassy-solutions/compendium) event-sourcing framework. Implements `IAIProvider` from `Compendium.Abstractions.AI` against the Ollama HTTP API for **local LLM inference** — designed for developer workflows and **air-gapped production** environments.
 
-Aligns with [ADR 0006](../../docs/adr/0006-multi-repo-adapter-split.md) (split heavy adapters into per-adapter repositories). Encodes the [`compendium-test-author`](.claude/skills/compendium-test-author/SKILL.md) skill so `/tests` and `/coverage` work out of the box.
+Extracted from `sassy-solutions/compendium` per [ADR-0006](https://github.com/sassy-solutions/compendium/blob/main/docs/adr/0006-multi-repo-adapter-split.md) (multi-repo adapter split).
 
-## What you get
-
-```
-.
-├── src/Compendium.Adapters.Ollama/        — the adapter project (rename Ollama → <Vendor>)
-│   ├── DependencyInjection/
-│   │   └── ServiceCollectionExtensions.cs
-│   ├── Options/OllamaOptions.cs
-│   └── OllamaAdapter.cs                   — illustrates the IAdapter (or any port) shape
-├── tests/Unit/Compendium.Adapters.Ollama.Tests/
-│   ├── DependencyInjection/ServiceCollectionExtensionsTests.cs
-│   ├── Options/OllamaOptionsTests.cs
-│   └── GlobalUsings.cs
-├── .github/workflows/ci.yml               — build + test + 90% coverage gate
-├── .claude/skills/compendium-test-author/SKILL.md
-├── .claude/commands/{tests,coverage}.md
-├── .config/dotnet-tools.json              — pins ReportGenerator
-├── Directory.Build.props
-├── Directory.Packages.props               — central package management
-├── Compendium.Adapters.Ollama.sln
-├── global.json                            — pins .NET 9 SDK
-└── LICENSE
-```
-
-## Conventions enforced (copy from Compendium framework)
-
-| Aspect | Choice |
-|---|---|
-| Test framework | xUnit 2.9.3 |
-| Assertions | FluentAssertions 6.12.1 — never `Assert.*` |
-| Mocks | NSubstitute 5.1.0 — never Moq |
-| Coverage | coverlet.collector 6.0.2 + ReportGenerator (local tool) |
-| Result pattern | `Result<T>` from `Compendium.Abstractions` (NuGet) |
-| Async | `async Task` + cancellation tokens — never `Thread.Sleep`, never `.Result` |
-| Test naming | `{SUT}Tests` / `{Method}_{Scenario}_{Expected}` |
-| Test layout | AAA explicit (`// Arrange / // Act / // Assert`) |
-| File header | Sassy Solutions copyright block |
-| HTTP mocking (when applicable) | `RichardSzalay.MockHttp` 7.0.0 |
-| Container fixtures (integration) | `Testcontainers` 4.11.0 + `IAsyncLifetime` + `[RequiresDockerFact]` |
-| CI gate | ≥ 90 % line coverage on the unit-testable surface (DB-bound types may be exempted with documented reason) |
-
-## How to scaffold a new adapter
+## Install
 
 ```bash
-# 1. Pick a vendor name (use PascalCase: Stripe, PostgreSQL, Redis…)
-export VENDOR=Stripe
+dotnet add package Compendium.Adapters.Ollama
+```
 
-# 2. Copy the template to a new directory next to your Compendium clone
-cp -r templates/adapter-dotnet ../compendium-adapter-${VENDOR,,}
-cd ../compendium-adapter-${VENDOR,,}
+```csharp
+services.AddCompendiumOllama(builder.Configuration.GetSection("Ollama"));
+```
 
-# 3. Find-and-replace placeholders (BSD sed on macOS — adapt for GNU sed)
-find . -type f \( -name '*.cs' -o -name '*.csproj' -o -name '*.sln' -o -name '*.md' -o -name '*.yml' -o -name '*.json' -o -name '*.props' \) -exec sed -i '' -e "s/Ollama/${VENDOR}/g" -e "s/ollama/${VENDOR,,}/g" {} +
+## Quick-start
 
-# 4. Rename folders/files
-git mv src/Compendium.Adapters.Ollama              src/Compendium.Adapters.${VENDOR}
-git mv src/Compendium.Adapters.${VENDOR}/Compendium.Adapters.Ollama.csproj \
-       src/Compendium.Adapters.${VENDOR}/Compendium.Adapters.${VENDOR}.csproj
-git mv src/Compendium.Adapters.${VENDOR}/OllamaAdapter.cs                   \
-       src/Compendium.Adapters.${VENDOR}/${VENDOR}Adapter.cs
-git mv src/Compendium.Adapters.${VENDOR}/Options/OllamaOptions.cs           \
-       src/Compendium.Adapters.${VENDOR}/Options/${VENDOR}Options.cs
+1. Install Ollama (one of):
+   ```bash
+   # macOS
+   brew install ollama && brew services start ollama
+   # Linux
+   curl -fsSL https://ollama.com/install.sh | sh
+   # Docker
+   docker run -d -p 11434:11434 --name ollama ollama/ollama
+   ```
+2. Pull a model:
+   ```bash
+   ollama pull llama3.2          # general chat + tool calling
+   ollama pull nomic-embed-text  # embeddings
+   ```
+3. Wire the adapter into your DI container:
+   ```csharp
+   services.AddCompendiumOllama(opt =>
+   {
+       opt.BaseUrl = "http://localhost:11434";
+       opt.DefaultModel = "llama3.2";
+       opt.DefaultEmbeddingModel = "nomic-embed-text";
+   });
+   ```
+4. Use `IAIProvider` like any other Compendium AI provider:
+   ```csharp
+   var result = await provider.CompleteAsync(new CompletionRequest
+   {
+       Model = "llama3.2",
+       Messages = new[] { Message.User("Tell me a joke.") },
+   });
+   ```
 
-git mv tests/Unit/Compendium.Adapters.Ollama.Tests           tests/Unit/Compendium.Adapters.${VENDOR}.Tests
-git mv tests/Unit/Compendium.Adapters.${VENDOR}.Tests/Compendium.Adapters.Ollama.Tests.csproj \
-       tests/Unit/Compendium.Adapters.${VENDOR}.Tests/Compendium.Adapters.${VENDOR}.Tests.csproj
-git mv tests/Unit/Compendium.Adapters.${VENDOR}.Tests/Options/OllamaOptionsTests.cs \
-       tests/Unit/Compendium.Adapters.${VENDOR}.Tests/Options/${VENDOR}OptionsTests.cs
+A runnable example lives in [`samples/01-local-chat`](samples/01-local-chat).
 
-mv Compendium.Adapters.Ollama.sln Compendium.Adapters.${VENDOR}.sln
+## Options
 
-# 5. Initialise git and verify build
-git init
-git add .
+| Key                       | Default                    | Notes                                                                                       |
+|---------------------------|----------------------------|---------------------------------------------------------------------------------------------|
+| `BaseUrl`                 | `http://localhost:11434`   | Where the Ollama HTTP API listens.                                                          |
+| `DefaultModel`            | `llama3.2`                 | Used when `CompletionRequest.Model` is empty.                                               |
+| `DefaultEmbeddingModel`   | `nomic-embed-text`         | Used when `EmbeddingRequest.Model` is empty.                                                |
+| `DefaultMaxTokens`        | `2048`                     | Maps to `options.num_predict`. Use `-1` to let the model finish naturally.                  |
+| `TimeoutSeconds`          | `600`                      | Local inference can be slow on first load — default is intentionally generous.              |
+| `AutoPullModel`           | `false`                    | On 404 / model-not-found, call `POST /api/pull` then retry. Dev-only — pulls can be huge.   |
+| `EnableLogging`           | `false`                    | Logs full request/response bodies at `Debug`. Never enable in production with PII.          |
+| `KeepAlive`               | `"5m"`                     | Forwarded as Ollama's `keep_alive` — how long the model stays resident in memory.           |
+
+## Tool calling
+
+Some Ollama models advertise OpenAI-compatible tool calling. Use the `WithTools()` extension:
+
+```csharp
+using Compendium.Adapters.Ollama.Tools;
+
+var tools = new List<AgentTool>
+{
+    new("get_weather", "Returns the current weather.",
+        """{"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}"""),
+};
+var request = new CompletionRequest
+{
+    Model = "llama3.2",
+    Messages = new[] { Message.User("What's the weather in Paris?") },
+}.WithTools(tools);
+
+var result = await provider.CompleteAsync(request);
+var calls = result.Value.GetToolCalls(); // IReadOnlyList<AgentToolInvocation>
+```
+
+**Model support is uneven.** Tool calling generally works on:
+
+| Model family            | Tool calling? |
+|-------------------------|----------------|
+| `llama3.2`, `llama3.3`  | yes            |
+| `llama4` (when out)     | yes            |
+| `qwen2.5`, `qwen3`      | yes            |
+| `mistral-nemo`, `mixtral` | yes          |
+| `command-r`, `command-r-plus` | yes      |
+| older `llama2`, `llama3.1` | partial / no |
+| embedding models        | no             |
+
+Older models silently ignore the `tools` field; the response will simply have no `tool_calls`. Verify against your specific model + Ollama version before relying on tool flow in production.
+
+## Streaming
+
+Ollama streams **newline-delimited JSON** (not Server-Sent Events). The adapter parses chunks automatically — consume them as any other `IAsyncEnumerable<Result<CompletionChunk>>`:
+
+```csharp
+await foreach (var chunk in provider.StreamCompleteAsync(request, ct))
+{
+    if (chunk.IsFailure) break;
+    Console.Write(chunk.Value.ContentDelta);
+}
+```
+
+## Auto-pull
+
+Set `opt.AutoPullModel = true` to automatically pull a missing model the first time it's requested. Useful for dev and one-shot ops; **not recommended for production** because pulls block the request for the duration of the download (often gigabytes).
+
+## Security
+
+Ollama runs **unauthenticated** by default on `localhost`. For production:
+
+- **Never** expose the raw API to the public internet — there is no auth, no rate-limiting, no per-tenant isolation.
+- Put it behind a reverse proxy that handles authentication (e.g. nginx + OIDC, or a Kubernetes ingress with mTLS).
+- Bind Ollama to `127.0.0.1` only and let the proxy do the public-facing TLS termination.
+- Treat the model surface as untrusted code execution context — anyone with API access can pull and run arbitrary models.
+
+## Recommended models
+
+| Use case                    | Suggested model                                  | Approx. size |
+|------------------------------|--------------------------------------------------|--------------|
+| General chat (development)   | `llama3.2`, `qwen2.5:7b`                         | 2–5 GB       |
+| General chat (production)    | `llama3.3:70b`, `qwen2.5:72b`                    | 40–50 GB     |
+| Tool calling (smallest)      | `llama3.2:3b`, `qwen2.5:3b`                      | 2–3 GB       |
+| Code completion              | `qwen2.5-coder`, `deepseek-coder-v2`             | 4–8 GB       |
+| Embeddings                   | `nomic-embed-text`, `mxbai-embed-large`          | 0.3–1 GB     |
+| Tiny CI / smoke tests        | `qwen2.5:0.5b`, `tinyllama`, `all-minilm`        | 0.3–1 GB     |
+
+## Versioning
+
+Versions are driven by git tags via [MinVer](https://github.com/adamralph/minver). The first published version is `1.0.0-preview.0` (the orchestrator tags on merge — **do not tag from a feature branch**).
+
+## Build & test locally
+
+```bash
+dotnet restore
 dotnet build -c Release
-dotnet test  -c Release
+dotnet test  -c Release --filter "FullyQualifiedName!~IntegrationTests"
 ```
 
-## What you still need to do per repo
+Integration tests boot a real Ollama container and pull tiny models — opt in via:
 
-After scaffolding :
-
-- **Author the actual adapter code.** Replace `OllamaAdapter` with the real implementation of whatever port (`IEventStore`, `IIdentityProvider`, `IBillingProvider`, `IEmailSender`, …) you're filling.
-- **NuGet publishing.** Add `NUGET_API_KEY` to repo secrets ; the included `release.yml` (TODO — add when first needed) packs and pushes on `v*` tags.
-- **Branch protection.** Require `build-test` (CI), at least one review, no force-push to `main`.
-- **Renovate or Dependabot.** Renovate config at `renovate.json` — track Compendium NuGets so a framework release auto-PRs the adapter. Dependabot for npm-style scheduled dep bumps.
-- **Integration tests** (optional but recommended for adapters with external systems). Add `tests/Integration/Compendium.Adapters.<Vendor>.IntegrationTests/` with `Testcontainers` if needed. Keep them out of the unit CI job.
-
-## Local-dev mode (when you're modifying both framework and adapter)
-
-Edit `Directory.Packages.props` to add a project reference instead of the NuGet :
-
-```xml
-<ItemGroup Condition="'$(LinkLocalCompendium)' == 'true'">
-  <PackageReference Remove="Compendium.Abstractions" />
-  <ProjectReference Include="../compendium/src/Abstractions/Compendium.Abstractions/Compendium.Abstractions.csproj" />
-</ItemGroup>
+```bash
+RUN_OLLAMA_INTEGRATION=1 dotnet test -c Release --filter "FullyQualifiedName~IntegrationTests"
 ```
 
-Then `dotnet build -p:LinkLocalCompendium=true`.
-
-## Common pitfalls (read before pushing)
-
-- **Broken `Compendium.sln`** : every `Project("{...}")` MUST have a matching `EndProject` on the next non-empty line, and every GUID listed in `Project(...)` MUST appear in the `GlobalSection(ProjectConfigurationPlatforms)` (4 `.Debug|Any CPU.*` + `.Release|Any CPU.*` lines). Linux CI is strict ; macOS is lenient and will mask this bug. **Always** use `dotnet sln add` / `dotnet sln remove` instead of hand-editing the sln. Verify with `dotnet sln list && dotnet build -c Release` before pushing.
-- **`gh pr merge` from a detached worktree** : fails opaquely with "could not determine current branch". Always run merges from a checkout that's on a named branch (typically `main`).
-- **MinVer tag prefix** : pinned to `v` in `Directory.Build.props`. The first tag must continue the version sequence of the package's previous releases (e.g. if `Compendium.Adapters.Stripe` was last published as `1.0.0-preview.8` from the framework, the first tag here is `v1.0.0-preview.9`).
-- **No `--no-verify`, no `--force-push`** (use `--force-with-lease` instead). No version bumps in `Directory.Packages.props` outside of Renovate-managed PRs.
-- **Skill / commands** : `.claude/skills/compendium-test-author/SKILL.md` and `.claude/commands/{tests,coverage}.md` ship pre-baked. `/tests` and `/coverage` work out of the box in Claude Code.
+Expect them to take several minutes the first time the image and models are pulled.
 
 ## License
 
-MIT — same as Compendium itself.
+[MIT](LICENSE) — Copyright © 2026 Sassy Solutions.

@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Compendium.Adapters.Ollama.Tests</AssemblyName>
-    <RootNamespace>Compendium.Adapters.Ollama.Tests</RootNamespace>
+    <AssemblyName>Compendium.Adapters.Ollama.IntegrationTests</AssemblyName>
+    <RootNamespace>Compendium.Adapters.Ollama.IntegrationTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
@@ -16,29 +16,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Framework deps used directly by tests. -->
     <PackageReference Include="Compendium.Core" />
     <PackageReference Include="Compendium.Abstractions.AI" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit" />
+    <PackageReference Include="Xunit.SkippableFact" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="NSubstitute" />
-    <PackageReference Include="RichardSzalay.MockHttp" />
+    <PackageReference Include="Testcontainers" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="coverlet.collector">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
